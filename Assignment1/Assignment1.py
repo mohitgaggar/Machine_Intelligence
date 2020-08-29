@@ -47,7 +47,7 @@ def get_entropy_of_dataset(df):
 def get_entropy_of_attribute(df,attribute):
 	entropy_of_attribute = 0
 	col_=df[attribute]
-	output=df["play"]
+	output = df[df.columns[-1]]
 	num_rows=len(df)
 	unique_vals_in_col=list(set(col_))
 	p={}
@@ -88,7 +88,7 @@ def get_information_gain(df,attribute):
 	#output: ({dict},'str')     
 def get_selected_attribute(df):
 	attributes=list(df.columns)
-	attributes.remove('play') 
+	attributes.remove(df.columns[-1]) 
 	information_gains={}
 	maxx=0
 	
