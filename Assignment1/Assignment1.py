@@ -23,10 +23,11 @@ def get_entropy_of_dataset(df):
 	entropy = 0
 	num_columns=len(df.columns)
 	num_rows=len(df)
-	output=df["play"]
 	p=0
 	n=0
-	for i in output:
+
+	output = df.columns[-1]
+	for i in df[output]:
 		if(i=="yes"):
 			p+=1
 		else:
