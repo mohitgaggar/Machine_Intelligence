@@ -26,9 +26,9 @@ def get_entropy_of_dataset(df):
 	p=0
 	n=0
 
-	output = df.columns[-1]
-	for i in df[output]:
-		if(i=="yes"):
+	output = df[df.columns[-1]]
+	for i in output:
+		if(i=="yes" or i=="YES" or i=="Yes" or i==1 or i=="1" or i=="y" or i=="Y" or i=="TRUE" or i=="true"):
 			p+=1
 		else:
 			n+=1
@@ -58,7 +58,7 @@ def get_entropy_of_attribute(df,attribute):
 		n[i]=0
 	
 	for i in range(num_rows):
-		if(output[i]=="yes"): 
+		if(output[i]=="yes" or output[i]=="YES" or output[i]=="Yes" or output[i]==1 or output[i]=="1" or output[i]=="y" or output[i]=="Y" or output[i]=="TRUE" or output[i]=="true"):
 			p[col_[i]]+=1 
 		else:
 			n[col_[i]]+=1
