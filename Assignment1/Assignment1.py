@@ -15,7 +15,6 @@ def log_2(number):
 	if(number==0):
 		return 0
 	else:
-		number=np.array([number])
 		return np.log2(number)
 
 
@@ -34,7 +33,7 @@ def get_entropy_of_dataset(df):
 			n+=1
 	p_ratio=(p/(p+n))
 	n_ratio=1-p_ratio
-	entropy=-1*((p_ratio)*log_2(p_ratio)+(n_ratio)*log_2(n_ratio))
+	entropy=-(p_ratio)*log_2(p_ratio)-(n_ratio)*log_2(n_ratio)
 	return entropy
 
 
@@ -66,7 +65,7 @@ def get_entropy_of_attribute(df,attribute):
 	for i in unique_vals_in_col:
 		p_ratio=(p[i]/(p[i]+n[i]))
 		n_ratio=1-p_ratio
-		entropy=-1*((p_ratio)*log_2(p_ratio)+(n_ratio)*log_2(n_ratio))
+		entropy=-(p_ratio)*log_2(p_ratio)-(n_ratio)*log_2(n_ratio)
 		entropy_of_attribute+=((p[i]+n[i])/(num_rows))*entropy
 	
 	return abs(entropy_of_attribute)
@@ -77,8 +76,8 @@ def get_entropy_of_attribute(df,attribute):
 	#input:int/float/double/large,int/float/double/large
 	#output:int/float/double/large
 def get_information_gain(df,attribute):
-	information_gain = 0
 	information_gain = get_entropy_of_dataset(df)-get_entropy_of_attribute(df,attribute)
+	
 	return information_gain
 
 
@@ -87,16 +86,15 @@ def get_information_gain(df,attribute):
 	#input: pandas_dataframe
 	#output: ({dict},'str')     
 def get_selected_attribute(df):
-	attributes=list(df.columns)
-	attributes.remove(df.columns[-1]) 
+	attributes=list(df.columns[:-1])
 	information_gains={}
-	maxx=0
+	maxInfoGain=0
 	
 	for attribute in attributes:
 		information_gains[attribute]=get_information_gain(df,attribute)
-		if(information_gains[attribute] > maxx):
+		if(information_gains[attribute] > maxInfoGain):
 			selected_column=attribute
-			maxx=information_gains[attribute]	
+			maxInfoGain=information_gains[attribute]	
 
 	'''
 	Return a tuple with the first element as a dictionary which has IG of all columns 
