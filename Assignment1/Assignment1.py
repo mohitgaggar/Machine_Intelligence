@@ -27,10 +27,14 @@ def get_entropy_of_dataset(df):
 
 	output = df[df.columns[-1]]
 	for i in output:
-		if(i=="yes" or i=="YES" or i=="Yes" or i==1 or i=="1" or i=="y" or i=="Y" or i=="TRUE" or i=="true"):
+		out = i.lower()
+		if(out == "yes" or out == "true" or out == "1"):
 			p+=1
-		else:
+		elif(out == "no" or out == "false" or out == "0"):
 			n+=1
+		else:
+			continue
+
 	p_ratio=(p/(p+n))
 	n_ratio=1-p_ratio
 	entropy=-(p_ratio)*log_2(p_ratio)-(n_ratio)*log_2(n_ratio)
@@ -57,10 +61,13 @@ def get_entropy_of_attribute(df,attribute):
 		n[i]=0
 	
 	for i in range(num_rows):
-		if(output[i]=="yes" or output[i]=="YES" or output[i]=="Yes" or output[i]==1 or output[i]=="1" or output[i]=="y" or output[i]=="Y" or output[i]=="TRUE" or output[i]=="true"):
+		out = output[i].lower()
+		if(out == "yes" or out == "true" or out == "1"):
 			p[col_[i]]+=1 
-		else:
+		elif(out == "no" or out == "false" or out == "0"):
 			n[col_[i]]+=1
+		else:
+			continue
 	
 	for i in unique_vals_in_col:
 		p_ratio=(p[i]/(p[i]+n[i]))
