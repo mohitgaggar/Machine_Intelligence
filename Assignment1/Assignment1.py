@@ -9,7 +9,7 @@ import random
 	#input:pandas_dataframe
 	#output:int/float/double/large
 
-# function to return the log based 2 of a number ,workaround for log(0) is returning 0
+# function to return the log based 2 of a number, workaround for log(0) is returning 0
 
 def log_2(number):
 	if(number==0):
@@ -27,13 +27,13 @@ def get_entropy_of_dataset(df):
 
 	output = df[df.columns[-1]]
 	for i in output:
-		out = i.lower()
+		out = i.lower()           # taking care of different cases in the string
 		if(out == "yes" or out == "true" or out == "1"):
 			p+=1
 		elif(out == "no" or out == "false" or out == "0"):
 			n+=1
 		else:
-			continue
+			continue             #invalid output such as missing value is discarded
 
 	p_ratio=(p/(p+n))
 	n_ratio=1-p_ratio
@@ -50,7 +50,7 @@ def get_entropy_of_dataset(df):
 def get_entropy_of_attribute(df,attribute):
 	entropy_of_attribute = 0
 	col_=df[attribute]
-	output = df[df.columns[-1]]
+	output = df[df.columns[-1]]    #getting the output column
 	num_rows=len(df)
 	unique_vals_in_col=list(set(col_))
 	p={}
@@ -61,7 +61,7 @@ def get_entropy_of_attribute(df,attribute):
 		n[i]=0
 	
 	for i in range(num_rows):
-		out = output[i].lower()
+		out = output[i].lower()      
 		if(out == "yes" or out == "true" or out == "1"):
 			p[col_[i]]+=1 
 		elif(out == "no" or out == "false" or out == "0"):
