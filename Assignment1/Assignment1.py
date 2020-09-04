@@ -8,23 +8,23 @@ def log_2(number):
 	else:
 		return np.log2(number)
 
-
 def get_entropy_of_dataset(df):
-	entropy = 0
 	num_columns = len(df.columns)
 	num_rows = len(df)
 	p = 0
 	n = 0
-
-	positive_responses = ["yes", "true", "1", "valid", "positive"]
-	negative_responses = ["no", "false", "0", "invalid", "negative"]
+	# positive and negative values can be interchanged as both are used in formulae
+	global positive
+	global negative
+	positive, negative = list(set(df[df.columns[-1]]))
+	positive, negative = positive.lower(), negative.lower()
 
 	output = df[df.columns[-1]]   #getting the output column
 	for i in output:
 		out = i.lower()           # taking care of different cases in the string
-		if(out in positive_responses):
+		if(out == positive):
 			p += 1
-		elif(out in negative_responses):
+		elif(out == negative):
 			n += 1
 		else:
 			continue             #invalid output such as missing value is discarded
@@ -53,15 +53,12 @@ def get_entropy_of_attribute(df,attribute):
 	for i in unique_vals_in_col:
 		p[i] = 0
 		n[i] = 0
-		
-	positive_responses = ["yes", "true", "1", "valid", "positive"]
-	negative_responses = ["no", "false", "0", "invalid", "negative"]
 
 	for i in range(num_rows):
 		out = output[i].lower()      
-		if(out in positive_responses):
+		if(out ==  positive):
 			p[col_[i]] += 1 
-		elif(out in negative_responses):
+		elif(out == negative):
 			n[col_[i]] += 1
 		else:
 			continue
