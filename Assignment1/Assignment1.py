@@ -8,6 +8,12 @@ def log_2(number):
 	else:
 		return np.log2(number)
 
+def get_ouput_attribute(df):
+	last=df.columns[-1]
+	vals={}
+	for i in set(df[last]):
+		vals[i]=0
+	return vals
 
 def get_entropy_of_dataset(df):
 	entropy = 0
@@ -15,23 +21,15 @@ def get_entropy_of_dataset(df):
 	num_rows = len(df)
 	p = 0
 	n = 0
-
-	positive_responses = ["yes", "true", "1", "valid", "positive"]
-	negative_responses = ["no", "false", "0", "invalid", "negative"]
+	responses=get_ouput_attribute(df)
 
 	output = df[df.columns[-1]]   #getting the output column
 	for i in output:
-		out = i.lower()           # taking care of different cases in the string
-		if(out in positive_responses):
-			p += 1
-		elif(out in negative_responses):
-			n += 1
-		else:
-			continue             #invalid output such as missing value is discarded
-
-	p_ratio = (p/(p+n))
-	n_ratio = 1-p_ratio
-	entropy = -(p_ratio)*log_2(p_ratio)-(n_ratio)*log_2(n_ratio)
+		responses[i]+=1
+	entropy=0
+	for i in responses.keys():
+		ratio=responses[i]/num_rows
+		entropy-=ratio*log_2(ratio)
 
 	return entropy
 
@@ -47,32 +45,24 @@ def get_entropy_of_attribute(df,attribute):
 	output = df[df.columns[-1]]
 	num_rows = len(df)
 	unique_vals_in_col = list(set(col_))
-	p = {}
-	n = {}
-
+	multiple_responses={}
+	responses=get_ouput_attribute(df) # returns the output values types
 	for i in unique_vals_in_col:
-		p[i] = 0
-		n[i] = 0
-		
-	positive_responses = ["yes", "true", "1", "valid", "positive"]
-	negative_responses = ["no", "false", "0", "invalid", "negative"]
+		multiple_responses[i]=responses.copy()  # create a copy of responses dict for each attribute value
 
 	for i in range(num_rows):
-		out = output[i].lower()      
-		if(out in positive_responses):
-			p[col_[i]] += 1 
-		elif(out in negative_responses):
-			n[col_[i]] += 1
-		else:
-			continue
-	
-	for i in unique_vals_in_col:
-		p_ratio = (p[i] / (p[i]+n[i]))
-		n_ratio = 1-p_ratio
-		entropy = -(p_ratio)*log_2(p_ratio) - (n_ratio)*log_2(n_ratio)
-		entropy_of_attribute += ((p[i]+n[i])/(num_rows))*entropy
+		multiple_responses[col_[i]][output[i]]+=1  # find out the number of reponses for each kind for each attribute value
+
+	for j in multiple_responses.keys():
+		entropy=0
+		num_of_values_in_attribute=sum(list(multiple_responses[j].values()))
+		for i in responses.keys():
+			ratio=multiple_responses[j][i]/num_of_values_in_attribute
+			entropy-=ratio*log_2(ratio)  # calculate entropy of individual attribute value
+		entropy_of_attribute += (num_of_values_in_attribute/num_rows)*entropy # calculate entoropy of whole attribute
 	
 	return abs(entropy_of_attribute)
+
 
 
 
