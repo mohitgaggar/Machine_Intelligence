@@ -10,22 +10,28 @@ def log_2(number):
 
 def get_entropy_of_dataset(df):
 	num_columns = len(df.columns)
-	output = df[df.columns[-1]]
 	num_rows = len(df)
-	out = {}
+	p = 0
+	n = 0
+	# positive and negative values can be interchanged as both are used in formulae
+	global positive
+	global negative
+	positive, negative = list(set(df[df.columns[-1]]))
+	positive, negative = positive.lower(), negative.lower()
 
-	for i in df[df.columns[-1]]:
-		if i not in out:
-			out[i] = 1
+	output = df[df.columns[-1]]   #getting the output column
+	for i in output:
+		out = i.lower()           # taking care of different cases in the string
+		if(out == positive):
+			p += 1
+		elif(out == negative):
+			n += 1
 		else:
-			out[i] += 1
-		
+			continue             #invalid output such as missing value is discarded
 
-	entropy = 0
-
-	for i in out:
-		pi = (out[i] / num_rows)
-		entropy += -pi*log_2(pi)
+	p_ratio = (p/(p+n))
+	n_ratio = 1-p_ratio
+	entropy = -(p_ratio)*log_2(p_ratio)-(n_ratio)*log_2(n_ratio)
 
 	return entropy
 
@@ -36,33 +42,34 @@ def get_entropy_of_dataset(df):
 	#output:int/float/double/large
 
 def get_entropy_of_attribute(df,attribute):
-	num_columns = len(df.columns)
+	entropy_of_attribute = 0
 	col_= df[attribute]
 	output = df[df.columns[-1]]
 	num_rows = len(df)
-	out = {}
+	unique_vals_in_col = list(set(col_))
+	p = {}
+	n = {}
+
+	for i in unique_vals_in_col:
+		p[i] = 0
+		n[i] = 0
 
 	for i in range(num_rows):
-		if col_[i] not in out:
-			out[col_[i]] = {output[i]:1}
+		out = output[i].lower()      
+		if(out ==  positive):
+			p[col_[i]] += 1 
+		elif(out == negative):
+			n[col_[i]] += 1
 		else:
-			if output[i] not in out[col_[i]]:
-				out[col_[i]][output[i]] = 1
-			else:
-				out[col_[i]][output[i]] += 1
-
-	entropy_of_attribute = 0
-
-	for i in out:
-		tot_attr = 0
-		for attr in out[i]:
-			tot_attr += out[i][attr]
-
-		for attr in out[i]:
-			pi = out[i][attr]/tot_attr
-			entropy_of_attribute += tot_attr/num_rows * (-pi*log_2(pi))
-
-	return entropy_of_attribute
+			continue
+	
+	for i in unique_vals_in_col:
+		p_ratio = (p[i] / (p[i]+n[i]))
+		n_ratio = 1-p_ratio
+		entropy = -(p_ratio)*log_2(p_ratio) - (n_ratio)*log_2(n_ratio)
+		entropy_of_attribute += ((p[i]+n[i])/(num_rows))*entropy
+	
+	return abs(entropy_of_attribute)
 
 
 
