@@ -18,8 +18,12 @@ def get_entropy(p, n):
 
 def get_entropy_of_dataset(df):
 
-	p = 0
-	n = 0
+	for i in df[df.columns[-1]]:
+		if j not in out:
+			out[j] = 1
+		else:
+			out[j] += 1
+		
 
 	for i in df.iloc[:, -1]:
 		if(i == "yes" or i == 1):
