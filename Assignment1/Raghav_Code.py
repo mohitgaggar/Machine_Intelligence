@@ -15,10 +15,10 @@ def get_entropy_of_dataset(df):
 	out = {}
 
 	for i in df[df.columns[-1]]:
-		if i not in out:
-			out[i] = 1
+		if j not in out:
+			out[j] = 1
 		else:
-			out[i] += 1
+			out[j] += 1
 		
 
 	entropy = 0
