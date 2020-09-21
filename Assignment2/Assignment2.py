@@ -8,24 +8,9 @@ def push_node(node , q):
 	i=0
 	while(i<len(q) and q[i].cost<node.cost):
 		i+=1
-	# when cost of the current node is same as the cost of node to be inserted we check their paths and select according to lexographic order
-	if(i<len(q) and q[i].cost==node.cost):
-		inserted_flag=0   #flag to check if the paths could be differentiated with comparing (size of smaller path ) number of elements
-		for j in range(min(len(node.path),len(q[i].path))):
-			if(q[i].path[j] > node.path[j]):
-				q.insert(i,node)
-				inserted_flag=1
-			elif(q[i].path[j] < node.path[j]):
-				q.insert(i+1,node)
-				inserted_flag=1
-
-		if(inserted_flag==0):      # when length of path has to be compared to make the decision of where the new node is inserted
-			if(len(node.path)>len(q[i].path)):	
-				q.insert(i+1,node)
-			else:
-				q.insert(i,node)
-	else:
-		q.insert(i,node)
+	while(i<len(q) and q[i].cost==node.cost and q[i].path<node.path):
+		i+=1
+	q.insert(i,node)
 
 
 # function to find the shortest path to any goal state using UCS algorithm
