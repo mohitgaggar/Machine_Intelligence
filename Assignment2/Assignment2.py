@@ -3,7 +3,11 @@ class Node:
 		self.cost=999999999999999
 		self.path=[start_point]
 
+
+
 # Function to push an object into the queue
+
+
 def push_node(node , q):
 	i=0
 	while(i<len(q) and q[i].cost<node.cost):
@@ -11,9 +15,7 @@ def push_node(node , q):
 	while(i<len(q) and q[i].cost==node.cost and q[i].path<node.path):
 		i+=1
 	q.insert(i,node)
-
-
-# function to find the shortest path to any goal state using UCS algorithm
+	
 
 def UCS_Traversal(cost,start_point,goals):
 	n=len(cost)-1
@@ -30,8 +32,9 @@ def UCS_Traversal(cost,start_point,goals):
 	node=Node(start_point)
 	node.cost=0
 	q.append(node)   # adding source to the queue
-	
+	min_path=[]
 	while(len(q)>0):    # while all nodes are not visited (when the graph is connected)
+		
 		node=q[0]
 		q.pop(0)
 		visited[node.path[-1]]=1   # node.path[-1] gives us the current node 
@@ -42,7 +45,8 @@ def UCS_Traversal(cost,start_point,goals):
 					shortest_path_and_cost[goals[i]].cost=node.cost
 					shortest_path_and_cost[goals[i]].path=node.path
 				break
-		
+		if(min_path!=[]):
+			break
 		for neighbor in range(1,n+1):    # finding all neighbors of the current node and adding them to the queue after updating cost and path
 			if(cost[node.path[-1]][neighbor]>0 and visited[neighbor]==0):
 				new_node=Node(start_point)
@@ -50,13 +54,16 @@ def UCS_Traversal(cost,start_point,goals):
 				new_node.path=node.path+[neighbor]
 				push_node(new_node,q)
 
-	minn=9999999999  
-	
-	for i in shortest_path_and_cost.keys():    # finding shortest of the shortest path to each goal states to give the path to a state with the least cost overall
+	minn=9999999999
+	min_path=[]
+
+	for i in shortest_path_and_cost.keys():
 		if(minn > shortest_path_and_cost[i].cost):
 			minn=shortest_path_and_cost[i].cost
 			min_path=shortest_path_and_cost[i].path
-			
+		if(minn == shortest_path_and_cost[i].cost and min_path > shortest_path_and_cost[i].path):
+			min_path=shortest_path_and_cost[i].path
+
 	return min_path
 
 def A_star_Traversal(cost,heuristic,start_point,goals):   
@@ -95,10 +102,10 @@ def A_star_Traversal(cost,heuristic,start_point,goals):
 				push_node(new_node,q)
 
 	
-			
+	if(min_path==None):
+		return []
 	return min_path
 	
-
 
 def DFS_Traversal(cost, start, goals):
 	stack = []  # stack to keep track of nodes
@@ -120,11 +127,11 @@ def DFS_Traversal(cost, start, goals):
 
 		if(check == False):
 			path.pop()
-			
 	if(path and path[-1] in goals):
 		return path
 	else:
 		return []
+
 
 '''
 Function tri_traversal - performs DFS, UCS and A* traversals and returns the path for each of these traversals 
