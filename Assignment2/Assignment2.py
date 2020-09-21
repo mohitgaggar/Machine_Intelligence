@@ -63,7 +63,7 @@ def UCS_Traversal(cost,start_point,goals):
 		if(minn > shortest_path_and_cost[i].cost):
 			minn=shortest_path_and_cost[i].cost
 			min_path=shortest_path_and_cost[i].path
-		if(minn == shortest_path_and_cost[i].cost and min_path > shortest_path_and_cost[i].path):
+		elif(minn == shortest_path_and_cost[i].cost and min_path > shortest_path_and_cost[i].path):
 			min_path=shortest_path_and_cost[i].path
 
 	return min_path
