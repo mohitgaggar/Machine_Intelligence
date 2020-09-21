@@ -74,32 +74,31 @@ def UCS_Traversal(cost,start_point,goals):
 			
 	return min_path
 
-def A_star_Traversal(cost,heuristic,start_point,goals):   # same as UCS except instead of just taking distance upto the point
-	shortest_path_and_cost={}                             #  we also add predicted cost between current node and goal state
+def A_star_Traversal(cost,heuristic,start_point,goals):   
+
 	n=len(cost)-1
-	for i in goals:
-		shortest_path_and_cost[i]=Node(start_point)
 
 	visited=[0 for i in range(n+1)]
 
 	q=[]
 	node=Node(start_point)
-	min_path=None
 	node.cost=heuristic[start_point]
+
+	min_path=None
 	q.append(node)
+
 	while(len(q)>0):
+
 		node=q[0]
 		q.pop(0)
+
 		visited[node.path[-1]]=1
 
 		for i in range(len(goals)):
 			if(node.path[-1]==goals[i]):
 				min_path=node.path
 				break
-				if(shortest_path_and_cost[goals[i]].cost > node.cost):
-					shortest_path_and_cost[goals[i]].cost=node.cost
-					shortest_path_and_cost[goals[i]].path=node.path
-				break
+				
 		if(min_path!=None):
 			break
 		
@@ -110,11 +109,7 @@ def A_star_Traversal(cost,heuristic,start_point,goals):   # same as UCS except i
 				new_node.path=node.path+[neighbor]
 				push_node(new_node,q)
 
-	# minn=9999999999
-	# for i in shortest_path_and_cost.keys():
-	# 	if(minn > shortest_path_and_cost[i].cost):
-	# 		minn=shortest_path_and_cost[i].cost
-	# 		min_path=shortest_path_and_cost[i].path
+	
 			
 	return min_path
 	
