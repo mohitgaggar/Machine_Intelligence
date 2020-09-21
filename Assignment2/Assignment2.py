@@ -127,12 +127,19 @@ def DFS_Traversal(cost, start, goals):
 		if(u in goals):
 			break
 		vis[u] = True    # mark the node as visited
-		for v in range(1, len(cost)):   # check rest of the nodes in lexicographical order
+		check = False
+		for v in range(len(cost)-1, 0, -1):   # check rest of the nodes in lexicographical order
 			if(v != u and (not vis[v]) and cost[u][v]>=0):  # check the constraints for feasibility of the node
+				check = True
 				stack.append(v)
-				break           # on getting a feasible nodes stop further checking
 
-	return path
+		if(check == False):
+			path.pop()
+			
+	if(path and path[-1] in goals):
+		return path
+	else:
+		return []
 
 '''
 Function tri_traversal - performs DFS, UCS and A* traversals and returns the path for each of these traversals 
