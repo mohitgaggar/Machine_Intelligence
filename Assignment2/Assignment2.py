@@ -15,7 +15,9 @@ def push_node(node , q):
 	while(i<len(q) and q[i].cost==node.cost and q[i].path<node.path):
 		i+=1
 	q.insert(i,node)
-	
+
+
+# function to find the shortest path to any goal state using UCS algorithm
 
 def UCS_Traversal(cost,start_point,goals):
 	n=len(cost)-1
