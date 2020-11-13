@@ -75,6 +75,6 @@ for column in data.columns:
 
 # In[ ]:
 
-print(data)
+
 
 
