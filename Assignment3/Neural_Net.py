@@ -180,61 +180,27 @@ class NN:
 			# forward_prop is a function that takes in the input to the layer, activation function , entire weight, bias 
 			# corresponding weight and bias for the layer can be calculated by using the layer_index 
 			# forward_prop should call itself recursively and calculate final output and return the final output along with all intermediate outputs(oy) and intermediate summer outputs(y) 
-			# dimensions of oy and y are (number_of_hidden_layers+1) X (number_of_input_features)
-			# print(weight[-1][0])
-
-			# y=np.random.rand((number_of_hidden_layers+1),number_of_input_features)
-			# oy=np.random.rand((number_of_hidden_layers+1),number_of_input_features)
 		
-			# error=loss_function(oy[-1][0],actual_output)
-			# all_errors.append(error)
-			# # print(error,"is error")
 
-			# # print("POP    ",oy[-1][0]," ",np.round(oy[-1][0])," ",actual_output)
-			# if(actual_output==1.0):
-			# 	# print("HI")
-			# 	if(np.round(oy[-1][0]) == actual_output):
-			# 		metric.tp+=1
-			# 		# print("1")
-			# 	else:
-			# 		metric.fn+=1
-			# else:
-			# 	# print("YO")
-			# 	if(np.round(oy[-1][0]) == actual_output):
-			# 		metric.tn+=1
-			# 		# print("1")
-			# 	else:
-			# 		metric.fp+=1
-					# print("2")
 
-			learning_rate=0.005
+			learning_rate=0.01
 			weight,bias=back_prop(weight , bias , actual_output , activation_function, oy ,learning_rate , inp)   
 			
 			# back_prop is a function that takes in the weight and the bias matrices , the error in output , activation_func , layer_index
 			# starts from the last layer and recursively calls itself till the input layer (corresponding activation_function to be passed)
-			# print(weight[-1][0],bias[0])
+			
 			return weight,bias
 				
 		number_of_hidden_layers=5
 		number_of_input_features=9
 
-		# activation_function=['relu'] * (number_of_hidden_layers) + ['sigmoid']
+		
 		activation_function=['sigmoid'] * (number_of_hidden_layers+1) 
 
-		# weight=np.random.rand(number_of_hidden_layers + 1,number_of_input_features,number_of_input_features)
+		
 		weight=np.random.rand(number_of_hidden_layers + 1,number_of_input_features,number_of_input_features)
 		bias=np.random.rand(number_of_hidden_layers + 1 , number_of_input_features)
-		# len(tonp)
-		# np.random.shuffle(tonp)
-		# split_factor=0.7
-		# number_in_train=int(len(tonp)*split_factor)
-		# train_data=tonp[:number_in_train]
-		# test_data=tonp[number_in_train:]
-		# trainmetric=metrics()
-		# testmetric=metrics()
-		# print(tonp[0])
-		# print(trainmetric)
-
+		
 		epochs=500
 		tr=pd.concat([X, Y], axis=1)
 		train_data=tr.to_numpy()
@@ -259,7 +225,6 @@ class NN:
 		yhat is a list of the predicted value for df X
 		
 		"""
-		# activation_function=[]
 		test_data=X.to_numpy()
 		number_of_hidden_layers=self.number_of_hidden_layers
 		number_of_input_features=self.number_of_input_features
@@ -382,11 +347,8 @@ class NN:
 		print(f"Recall : {r}")
 		print(f"F1 SCORE : {f1}")
 		print(f"Accuracy {a}")
-			
 
-	def main(self):
-		data=pd.read_csv(r'LBW_Dataset.csv')
-
+	def pre_process(self,data):
 		replace_mean = ['Age','Weight','HB','BP']
 		for col in replace_mean:
 			data[col].fillna(data[col].mean(),inplace = True)
@@ -409,31 +371,32 @@ class NN:
 			max_val = max(data[column])
 			min_val = min(data[column])
 			data[column] = (data[column]-min_val)/(max_val-min_val)
-		data['Education']=1.0
-		# print(data.columns)
+		data['Education']=1.0	
+
+		return data		
+
+	def main(self):
+		data=pd.read_csv(r'LBW_Dataset.csv')
+		data=self.pre_process(data)
+
 		data=data.sample(frac=1)
-		# print(data.head())
+
 		factor=0.7
 		index_split=int(factor * len(data))
 
 		x_train=data.iloc[:index_split,:-1] 
 		y_train=data.iloc[:index_split,-1:] 
-		# test=data.iloc[index_split:,:]
+
 		x_test=data.iloc[index_split:,:-1] 
 		y_test=data.iloc[index_split:,-1:] 
 
 		self.fit(x_train,y_train)
-		# print(self.w)
+		
 		yhat=self.predict(x_test)
-		# yTest=y_test.values.tolist()
+		
 		yTest=y_test[y_test.columns[-1]].tolist()
-		# print(len(y_test),len(yhat))
-		# print(yTest,"\n",yhat)
+		
 		self.CM(yTest,yhat)
-		# print(self.w)
-		# print(yhat)
-		# print(self.activate(self.number_of_hidden_layers,12))
-		# print()
 		
 nn=NN()
 nn.main()
