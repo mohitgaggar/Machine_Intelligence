@@ -44,6 +44,8 @@ class NN:
 			return 1/(1+np.exp(-x))
 
 		def activate(func,number):
+			return sigmoid(number)
+
 			if(func=='sigmoid'):
 				f=sigmoid
 			elif(func=='relu'):
@@ -57,11 +59,16 @@ class NN:
 			return np.maximum(0,x)
 
 		def derivative_function(func,out):
+			return derivative_sigmoid(out)
+			
 			if(func=='sigmoid'):
 				f=derivative_sigmoid
 			elif(func=='relu'):
 				f=derivative_relu
 			return f(out)
+
+		def err(a,b):
+			return (1/2)*(a-b)**2
 
 		def forward_prop(inp,activation_function,w,b):
 
@@ -84,28 +91,33 @@ class NN:
 				for j in range(number_of_input_features):
 					for k in range(number_of_input_features):
 						y[i][k]+=oy[i-1][j]*w[i][j][k]
-
 				for j in range(number_of_input_features):
 					y[i][j]+=b[i][j]
 					oy[i][j]=activate(activation_function[i],y[i][j])
 			
+
 			for j in range(number_of_input_features):
 				y[number_of_hidden_layers][0]+=oy[number_of_hidden_layers - 1][j] * w[number_of_hidden_layers][j][0]
-
 			oy[number_of_hidden_layers][0]=activate(activation_function[number_of_hidden_layers],y[number_of_hidden_layers][0])
 
+			# print(y[0][0],oy[0][0])
 			return y,oy
 
 		# print(partial_der_intermediate_outputs)
 
-		def Partial_der(partial_der_intermediate_outputs , actual_output ,activation_functions , oy ,w):
-			# der_loss_wrt_output=oy[number_of_hidden_layers][0] - actual_output    # using 1/2(y^  -  y)**2
+		def Partial_der( actual_output ,activation_functions , oy ,w):
+			# der_loss_wrt_output=-1*(oy[number_of_hidden_layers][0] - actual_output)    # using 1/2(y^  -  y)**2
+			
+			partial_der_intermediate_outputs=np.zeros((number_of_hidden_layers + 1, number_of_input_features))
 
-			calculated_output=oy[number_of_hidden_layers][0]
-			der_loss_wrt_output= ((1-actual_output)/(1-calculated_output)) - (actual_output/calculated_output)      # using binary cross entropy
+			der_loss_wrt_output=oy[number_of_hidden_layers][0] - actual_output 
+			# calculated_output=oy[number_of_hidden_layers][0]
+			# der_loss_wrt_output= ((1-actual_output)/(1-calculated_output)) - (actual_output/calculated_output)      # using binary cross entropy
 			
 			partial_der_intermediate_outputs[number_of_hidden_layers][0]=der_loss_wrt_output * derivative_function(activation_functions[number_of_hidden_layers],oy[number_of_hidden_layers][0])
 			
+			# print(partial_der_intermediate_outputs[number_of_hidden_layers][0] , der_loss_wrt_output , derivative_function(0,oy[-1][0]),oy[-1][0])
+
 			for j in range(number_of_input_features):
 				partial_der_intermediate_outputs[number_of_hidden_layers - 1][j]=partial_der_intermediate_outputs[number_of_hidden_layers][0] * w[number_of_hidden_layers-1][j][0]* derivative_function(activation_functions[number_of_hidden_layers-1],oy[number_of_hidden_layers - 1][j])    
 			
@@ -115,7 +127,7 @@ class NN:
 						partial_der_intermediate_outputs[i][j]+= partial_der_intermediate_outputs[i+1][k] * w[i][j][k] * derivative_function(activation_function[i],oy[i][j])
 
 			# print(partial_der_intermediate_outputs)
-
+			return partial_der_intermediate_outputs
 
 
 		def back_prop(w , b , actual_output , activation_functions ,oy , learning_rate , inp):
@@ -123,10 +135,11 @@ class NN:
 			nw=np.zeros((number_of_hidden_layers+1,number_of_input_features,number_of_input_features))
 			nb=np.zeros((number_of_hidden_layers+1,number_of_input_features))
 
-			partial_der_intermediate_outputs=np.zeros((number_of_hidden_layers + 1, number_of_input_features))
-			Partial_der(partial_der_intermediate_outputs , actual_output , activation_functions ,oy ,w)
 			
-			
+			partial_der_intermediate_outputs=Partial_der(actual_output , activation_functions ,oy ,w)
+			# print(partial_der_intermediate_outputs[0])
+			# print(learning_rate*partial_der_intermediate_outputs[0][3]*inp[1])
+
 			for j in range(number_of_input_features):
 				for k in range(number_of_input_features):
 					nw[0][j][k]=w[0][j][k]-learning_rate*partial_der_intermediate_outputs[0][k]*inp[j]
@@ -148,24 +161,14 @@ class NN:
 			for j in range(number_of_input_features):
 				nb[number_of_hidden_layers][j]=b[number_of_hidden_layers][j] - learning_rate * partial_der_intermediate_outputs[number_of_hidden_layers][0]
 
-
-			# print(b,nb)
-			# print("HIHIHIH",nw[-1][0])
-
-			# print(w[-1][1],nw[-1][1] ,sep="\n")
+			# print(nw[0])
 			return nw,nb
-			# b=nb.copy()
-			# w=nw.copy()
-
-		# print(weight)
-
-		# print(bias)
 
 		# weight matrix dimensions (Number_of_hidden_layers+1) * 9 * 9
 		# bias matrix dimansions (Number_of_hidden_layers+1) * 1
 		# expected output is the given output for the row
-		def loss_function(yhat,y):
-			return -1 * (y*np.log(yhat) + (1-y)*np.log(1-yhat))
+		# def loss_function(yhat,y):
+		# 	return -1 * (y*np.log(yhat) + (1-y)*np.log(1-yhat))
 
 
 
@@ -176,7 +179,8 @@ class NN:
 			inp=inp[:-1]
 			# print(len(inp))
 
-			y,oy=forward_prop(inp , activation_function , weight , bias )    
+			y,oy=forward_prop(inp , activation_function , weight , bias )  
+			# print(oy)  
 			# forward_prop is a function that takes in the input to the layer, activation function , entire weight, bias 
 			# corresponding weight and bias for the layer can be calculated by using the layer_index 
 			# forward_prop should call itself recursively and calculate final output and return the final output along with all intermediate outputs(oy) and intermediate summer outputs(y) 
@@ -188,32 +192,48 @@ class NN:
 			
 			# back_prop is a function that takes in the weight and the bias matrices , the error in output , activation_func , layer_index
 			# starts from the last layer and recursively calls itself till the input layer (corresponding activation_function to be passed)
-			
+			# print(err(oy[-1][0],actual_output))
 			return weight,bias
 				
-		number_of_hidden_layers=5
+		number_of_hidden_layers=4
 		number_of_input_features=9
 
-		
+		# activation_function=['relu'] * (number_of_hidden_layers) +['sigmoid']
 		activation_function=['sigmoid'] * (number_of_hidden_layers+1) 
 
 		
-		weight=np.random.rand(number_of_hidden_layers + 1,number_of_input_features,number_of_input_features)
-		bias=np.random.rand(number_of_hidden_layers + 1 , number_of_input_features)
+		# weight=np.random.rand(number_of_hidden_layers + 1,number_of_input_features,number_of_input_features)
+		# bias=np.random.rand(number_of_hidden_layers + 1 , number_of_input_features)
+
+		weight=np.zeros((number_of_hidden_layers+1,number_of_input_features,number_of_input_features))
+		bias=np.ones((number_of_hidden_layers+1,number_of_input_features))
+
+		for i in range(number_of_hidden_layers+1):
+			for j in range(number_of_input_features):
+				for k in range(number_of_input_features):
+					weight[i][j][k]=1/number_of_input_features
+				bias[i][j]=1/number_of_input_features
 		
-		epochs=500
+		epochs=100
 		tr=pd.concat([X, Y], axis=1)
 		train_data=tr.to_numpy()
-
+		
 		for _ in range(epochs):
 			all_errors=[]
+			# np.random.shuffle(train_dat)
 			for i in range(len(train_data)):
+				arrrr=weight
 				weight,bias=train(train_data[i],weight,bias,all_errors)
+		
+		# print(arrrr[1])
+		# print("HIHIH")
+		# print(weight[1])
 		self.w=weight
 		self.b=bias
 		self.activation_function=activation_function
 		self.number_of_hidden_layers=number_of_hidden_layers
 		self.number_of_input_features=number_of_input_features
+		
 
 	
 	def predict(self,X):
@@ -260,9 +280,9 @@ class NN:
 		def forward_prop(inp,activation_function,w,b):
 
 			#Summed output at each layer
-			y=np.random.rand((number_of_hidden_layers+1),number_of_input_features)
+			y=np.zeros(((number_of_hidden_layers+1),number_of_input_features))
 			#Activation function applied 
-			oy=np.random.rand((number_of_hidden_layers+1),number_of_input_features)
+			oy=np.zeros(((number_of_hidden_layers+1),number_of_input_features))
 
 			#First hidden layer
 			for j in range(number_of_input_features):
@@ -294,12 +314,13 @@ class NN:
 
 		def test(inp,activation_function , w , b,arr):
 			y,oy=forward_prop(inp, activation_function , w , b )  
+			# print(oy[-1][0])
 			arr.append(oy[-1][0])
 		
 		arr=[]
 		for i in range(len(test_data)):
 			test(test_data[i],self.activation_function,self.w,self.b,arr)
-		
+		# print(arr)
 		return arr
 
 
@@ -395,7 +416,8 @@ class NN:
 		yhat=self.predict(x_test)
 		
 		yTest=y_test[y_test.columns[-1]].tolist()
-		
+		# print(yhat)
+		# print(self.w)
 		self.CM(yTest,yhat)
 		
 nn=NN()
