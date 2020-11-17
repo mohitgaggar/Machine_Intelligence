@@ -8,10 +8,11 @@ Mention hyperparameters used and describe functionality in detail in this space
 
 import pandas as pd
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 class NN:
 
-#Class variables
+	#Class variables
 	num_hidden_layers=4
 	num_input_features=9
 
@@ -19,13 +20,13 @@ class NN:
 	# we apply sigmoid to final layer before prediction
 	activation_function=['relu'] * (num_hidden_layers) + ['sigmoid']
 
-#Class Methods
+	#Class Methods
 	def activate(self,func,number):
 		if(func=='sigmoid'):
 				return 1/(1+np.exp(-number))
 
 		elif(func=='relu'):
-				return np.maximum(0,number)
+				return max(0,number)
 
 	def derivative_function(self,func,out):
 			if(func=='sigmoid'):
@@ -49,20 +50,21 @@ class NN:
 		y=np.zeros(((num_hidden_layers+1),num_input_features))
 		oy=np.zeros(((num_hidden_layers+1),num_input_features))
 	
-		# We emulate matrix multiplication where each cell in y is computed
+		# We do matrix multiplication where each cell in y is computed
 		# by summing product of the input neuron and weight of the corresponding cell in weight matrix
 		# And then adding the bias
 		
-	#For first layer
+		#For first layer
 		for j in range(num_input_features):
 			for k in range(num_input_features):  #Multiplying with weight matrix
 				y[0][k]+=inp[j]*w[0][j][k]
+
 		for j in range(num_input_features):		 #Adding the bias
 			y[0][j]+=b[0][j]
 			oy[0][j]=self.activate(activation_function[0],y[0][j])
 
 
-	#For all hidden layers
+		#For all hidden layers
 		for i in range(1,num_hidden_layers):
 			for j in range(num_input_features):
 				for k in range(num_input_features):
@@ -72,11 +74,11 @@ class NN:
 				oy[i][j]=self.activate(activation_function[i],y[i][j])
 		
 
-	#For output layer
+		#For output layer
 		for j in range(num_input_features):
 			y[num_hidden_layers][0]+=oy[num_hidden_layers - 1][j] * w[num_hidden_layers][j][0]
 
-	#Final output Oy
+		#Final output Oy
 		oy[num_hidden_layers][0]=self.activate(activation_function[num_hidden_layers],y[num_hidden_layers][0])
 		return y,oy
 
@@ -90,9 +92,9 @@ class NN:
 
 
 		partial_derivative_intermediate_outputs=np.zeros((num_hidden_layers + 1, num_input_features))
-		# numpy array to store partial derivatives of loss wrt summed (input*weights) to neurons (dE/dy)
+		# numpy array to store partial derivatives of loss wrt summed input to neurons (dE/dy)
 
-		der_loss_wrt_output=oy[num_hidden_layers][0] - actual_output    # using 1/2(y^  -  y)**2
+		der_loss_wrt_output=oy[num_hidden_layers][0] - actual_output
 		# derivative of loss (using 1/2(y^  -  y)**2 as cost) wrt calculated output 
 		# final calculated output of the neural net is the output of the single neuron in the final layer ie oy[num_hidden_layer][0]
 		
@@ -102,7 +104,7 @@ class NN:
 		for j in range(num_input_features):
 			partial_derivative_intermediate_outputs[num_hidden_layers - 1][j]=partial_derivative_intermediate_outputs[num_hidden_layers][0] * w[num_hidden_layers-1][j][0]* self.derivative_function(activation_functions[num_hidden_layers-1],oy[num_hidden_layers - 1][j])    
 	
-	#Calculating subsequent derivatives using chain rule
+		#Calculating subsequent derivatives using chain rule
 		for i in range(num_hidden_layers-2,-1,-1):
 			for j in range(num_input_features):
 				for k in range(num_input_features):
@@ -123,19 +125,19 @@ class NN:
 		num_input_features = self.num_input_features
 		activation_function = self.activation_function
 
-
+		# updated weight and bias matrices
 		nw=np.zeros((num_hidden_layers+1,num_input_features,num_input_features))
 		nb=np.zeros((num_hidden_layers+1,num_input_features))
-		# new weight and bias matrices
 		
 		partial_derivative_intermediate_outputs=self.Partial_Derivative(actual_output , activation_functions ,oy ,w)
 		# function to calculated partial derivatives at the summer at each neuron
 
+		# updating weights for output layer
 		for j in range(num_input_features):
 			for k in range(num_input_features):
 				nw[0][j][k]=w[0][j][k]-learning_rate*partial_derivative_intermediate_outputs[0][k]*inp[j]
 					
-
+		# updating weights for hidden layers
 		for i in range(1,num_hidden_layers):
 			for j in range(num_input_features):
 				for k in range(num_input_features):
@@ -144,10 +146,12 @@ class NN:
 		for j in range(num_input_features):
 			nw[num_hidden_layers][j][0]=w[num_hidden_layers][j][0]-learning_rate*partial_derivative_intermediate_outputs[num_hidden_layers][0]*oy[num_hidden_layers-1][j]
 		
+		# updating bias for output layer
 		for i in range(num_hidden_layers):
 			for j in range(num_input_features):
 				nb[i][j]=b[i][j] - learning_rate * partial_derivative_intermediate_outputs[i][j]
-					
+		
+		# updating bias for hidden layers
 		for j in range(num_input_features):
 			nb[num_hidden_layers][j]=b[num_hidden_layers][j] - learning_rate * partial_derivative_intermediate_outputs[num_hidden_layers][0]
 
@@ -179,25 +183,22 @@ class NN:
 
 
 		weight=np.zeros((num_hidden_layers+1,num_input_features,num_input_features))
-		bias=np.ones((num_hidden_layers+1,num_input_features))
-
-		for i in range(num_hidden_layers+1):
-			for j in range(num_input_features):
-				for k in range(num_input_features):
-					weight[i][j][k]=1/num_input_features
-				bias[i][j]=1/num_input_features
-		# initialising the weights and bias with value 1/num_input_features to prevent saturation of activation function
+		weight.fill(2/num_input_features) 
+		# initialising the weights  with value 2/num_input_features to prevent saturation of activation function value
+		
+		bias=np.random.uniform(-0.15, 0.15, (num_hidden_layers+1,num_input_features))
+		# intializing random bias
 		 
 		epochs=100
 		
 		tr=pd.concat([X, Y], axis=1)
 		# concatenating X and Y so that shuffling of training data can be done before training
-		train_data=tr.to_numpy()
-		# converting df to numpy array
 
+		train_data=tr.to_numpy()
+
+		# feeding in training data
 		for _ in range(epochs):
 			for i in range(len(train_data)):
-				arrrr=weight
 				weight,bias=train(train_data[i],weight,bias)
 
 
@@ -217,26 +218,22 @@ class NN:
 	def predict(self,X):
 
 		test_data=X.to_numpy()
-		num_hidden_layers=self.num_hidden_layers
-		num_input_features=self.num_input_features
-				
-
-		def test(inp,activation_function , w , b,arr):
-			y,oy=self.forward_prop(inp, activation_function , w , b )  
-
-			yhat.append(oy[-1][0])
 		
+		# feeding in the test data and getting the output
 		yhat=[]
 		for i in range(len(test_data)):
-			test(test_data[i],self.activation_function,self.w,self.b,yhat)
+			y, oy = self.forward_prop(test_data[i],self.activation_function,self.w, self.b)
+			yhat.append(oy[-1][0])
+
 		return yhat
 
-	'''
-	Prints confusion matrix 
-	y_test is list of y values in the test dataset
-	y_test_obs is list of y values predicted by the model'''
+	def CM(self, y_test,y_test_obs):
+		'''
+		Prints confusion matrix 
+		y_test is list of y values in the test dataset
+		y_test_obs is list of y values predicted by the model
 
-	def CM(self,y_test,y_test_obs):
+		'''
 
 		for i in range(len(y_test_obs)):
 			if(y_test_obs[i]>0.6):
@@ -245,7 +242,10 @@ class NN:
 				y_test_obs[i]=0
 		
 		cm=[[0,0],[0,0]]
-		fp=0 ;		fn=0 ;		tp=0 ;		tn=0
+		fp=0
+		fn=0
+		tp=0
+		tn=0
 		
 		for i in range(len(y_test)):
 			if(y_test[i]==1 and y_test_obs[i]==1):
@@ -256,7 +256,6 @@ class NN:
 				fp=fp+1
 			if(y_test[i]==0 and y_test_obs[i]==1):
 				fn=fn+1
-
 		cm[0][0]=tn
 		cm[0][1]=fp
 		cm[1][0]=fn
@@ -265,34 +264,35 @@ class NN:
 		p= tp/(tp+fp)
 		r=tp/(tp+fn)
 		f1=(2*p*r)/(p+r)
-		a=(tn+tp)/(tp+tn+fp+fn)
-
+		a = (tp+tn)/(tp+tn+fp+fn)
+		
 		print("Confusion Matrix : ")
 		print(cm)
 		print("\n")
 		print(f"Precision : {p}")
 		print(f"Recall : {r}")
 		print(f"F1 SCORE : {f1}")
-		print(f"Accuracy {a}")
+		print(f"Accuray : {a}")
 
 
 	def main(self):
-		data=pd.read_csv(r'Cleaned_LBW_Dataset.csv')
-		data=data.sample(frac=1) #Shuffle rows
+		# reading in the cleaned data
+		data=pd.read_csv('Cleaned_LBW_Dataset.csv')
 
-		factor=0.7
-		index_split=int(factor * len(data))
+		# splitting the data into test and train sets
+		x_train, x_test, y_train, y_test = train_test_split(data.iloc[:, :data.shape[1]-1], data.iloc[:,-1], test_size = 0.3, random_state = 44)
 
-		x_train=data.iloc[:index_split,:-1] 
-		y_train=data.iloc[:index_split,-1:] 
-
-		x_test=data.iloc[index_split:,:-1] 
-		y_test=data.iloc[index_split:,-1:] 
-
+		# fitting the model to the data
 		self.fit(x_train,y_train)
+
+		# predicitig values using trained model
 		yhat=self.predict(x_test)
-		yTest=y_test[y_test.columns[-1]].tolist()
-		self.CM(yTest,yhat)
-		
+
+		# getting the metrics
+		yTest=y_test.tolist()
+		self.CM(yTest, yhat)
+
+
+# creating the neural network 
 nn=NN()
 nn.main()
