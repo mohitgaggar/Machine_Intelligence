@@ -8,7 +8,7 @@ def log_2(number):
 	else:
 		return np.log2(number)
 
-def get_ouput_attribute(df):
+def get_output_attribute(df):
 	last=df.columns[-1]
 	vals={}
 	for i in set(df[last]):
@@ -21,12 +21,14 @@ def get_entropy_of_dataset(df):
 	num_rows = len(df)
 	p = 0
 	n = 0
-	responses=get_ouput_attribute(df)
+	responses=get_output_attribute(df)
 
 	output = df[df.columns[-1]]   #getting the output column
 	for i in output:
 		responses[i]+=1
 	entropy=0
+	#Entropy = -(p(0) * log(P(0)) + p(1) * log(P(1)))
+	# Where p0 and p1 denote proportions of samples in the respective classes
 	for i in responses.keys():
 		ratio=responses[i]/num_rows
 		entropy-=ratio*log_2(ratio)
@@ -46,7 +48,7 @@ def get_entropy_of_attribute(df,attribute):
 	num_rows = len(df)
 	unique_vals_in_col = list(set(col_))
 	multiple_responses={}
-	responses=get_ouput_attribute(df) # returns the output values types
+	responses=get_output_attribute(df) # returns the output values types
 	for i in unique_vals_in_col:
 		multiple_responses[i]=responses.copy()  # create a copy of responses dict for each attribute value
 
@@ -76,8 +78,12 @@ def get_information_gain(df,attribute):
 	return information_gain
 
 
+'''Returns Attribute with highest info gain'''
 
-''' Returns Attribute with highest info gain'''  
+''' The information gain is calculated for each variable in the dataset. 
+The variable that has the largest information gain is selected to split the dataset.
+Generally, a larger gain indicates a smaller entropy or less surprise.'''
+	  
 	#input: pandas_dataframe
 	#output: ({dict},'str')   
 
